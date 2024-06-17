@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Configuration, OpenAIApi } from 'openai';
+import { OpenAIApi } from 'openai';
 import { Box, Button, Input, VStack, HStack, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -9,10 +9,9 @@ const ChatInterface = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [input, setInput] = useState('');
 
-  const configuration = new Configuration({
+  const openai = new OpenAIApi({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  const openai = new OpenAIApi(configuration);
 
   // Load session history from localStorage
   useEffect(() => {
