@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, VStack, HStack, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Configuration, OpenAIApi } from 'openai';
 
 const ChatInterface = () => {
   const [tabs, setTabs] = useState([{ id: 1, messages: [] }]);
   const [activeTab, setActiveTab] = useState(0);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const configuration = new Configuration({
+    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
 
   // Load session history from localStorage
   useEffect(() => {
@@ -21,12 +28,29 @@ const ChatInterface = () => {
     localStorage.setItem('chatTabs', JSON.stringify(tabs));
   }, [tabs]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim() === '') return;
     const newTabs = [...tabs];
     newTabs[activeTab].messages.push({ text: input, sender: 'user' });
     setTabs(newTabs);
     setInput('');
+    setLoading(true);
+
+    try {
+      const response = await openai.createCompletion({
+        model: 'text-davinci-003',
+        prompt: input,
+        max_tokens: 150,
+      });
+
+      const aiMessage = response.data.choices[0].text.trim();
+      newTabs[activeTab].messages.push({ text: aiMessage, sender: 'ai' });
+      setTabs(newTabs);
+    } catch (error) {
+      console.error('Error fetching response from OpenAI:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTabChange = (index) => {
@@ -64,7 +88,7 @@ const ChatInterface = () => {
       </Tabs>
       <HStack mt={4}>
         <Textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." />
-        <Button onClick={handleSend}>Send</Button>
+        <Button onClick={handleSend} isLoading={loading}>Send</Button>
       </HStack>
     </Box>
   );
