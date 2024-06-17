@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, VStack, HStack, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,6 +7,19 @@ const ChatInterface = () => {
   const [tabs, setTabs] = useState([{ id: 1, messages: [] }]);
   const [activeTab, setActiveTab] = useState(0);
   const [input, setInput] = useState('');
+
+  // Load session history from localStorage
+  useEffect(() => {
+    const savedTabs = JSON.parse(localStorage.getItem('chatTabs'));
+    if (savedTabs) {
+      setTabs(savedTabs);
+    }
+  }, []);
+
+  // Save session history to localStorage
+  useEffect(() => {
+    localStorage.setItem('chatTabs', JSON.stringify(tabs));
+  }, [tabs]);
 
   const handleSend = () => {
     if (input.trim() === '') return;
