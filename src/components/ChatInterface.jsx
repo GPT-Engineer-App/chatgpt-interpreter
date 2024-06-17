@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, VStack, HStack, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Configuration, OpenAIApi } from 'openai';
 
 const ChatInterface = () => {
   const [tabs, setTabs] = useState([{ id: 1, messages: [] }]);
   const [activeTab, setActiveTab] = useState(0);
   const [input, setInput] = useState('');
+
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
 
   // Load session history from localStorage
   useEffect(() => {
@@ -21,12 +27,26 @@ const ChatInterface = () => {
     localStorage.setItem('chatTabs', JSON.stringify(tabs));
   }, [tabs]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim() === '') return;
     const newTabs = [...tabs];
     newTabs[activeTab].messages.push({ text: input, sender: 'user' });
     setTabs(newTabs);
     setInput('');
+
+    try {
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: input,
+        max_tokens: 150,
+      });
+
+      const aiMessage = response.data.choices[0].text.trim();
+      newTabs[activeTab].messages.push({ text: aiMessage, sender: 'ai' });
+      setTabs(newTabs);
+    } catch (error) {
+      console.error("Error fetching response from OpenAI:", error);
+    }
   };
 
   const handleTabChange = (index) => {
