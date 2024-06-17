@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, VStack, HStack, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { OpenAIApi, Configuration } from 'openai';
+import { Configuration, OpenAIApi } from 'openai';
 
 const ChatInterface = () => {
   const [tabs, setTabs] = useState([{ id: 1, messages: [] }]);
